@@ -17,11 +17,15 @@ Executable bnfparser
   main-is: Main.hs
   buildable: True
   build-depends:
+      bytestring -any,
       base -any,
+      hspec -any,
+      aeson -any,
       trifecta -any,
-      hspec -any
+      scotty -any
   default-language: Haskell2010
   other-modules:
       BackusNaurForm
       Util
+      Test.Main
       Test.ParserTest

@@ -1,23 +1,46 @@
 {-# OPTIONS_GHC -Wall #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module BackusNaurForm where
 
 import Control.Applicative
+import Data.Aeson (ToJSON, genericToEncoding, defaultOptions, toEncoding, pairs, (.=))
+import GHC.Generics
 import Text.Trifecta
 import Util
 
 
-data BNFDefinition = BNFDefinition [RuleDefinition]
-  deriving (Eq, Show)
 
-data RuleDefinition = RuleDefinition String Expression
-  deriving (Eq, Show)
+data BNFDefinition = BNFDefinition {
+    rules :: [RuleDefinition]
+  } deriving (Generic, Eq, Show)
 
-newtype Expression = Expression [[Term]] -- or connected term lists
-  deriving (Eq, Show)
+instance ToJSON BNFDefinition where
+  toEncoding = genericToEncoding defaultOptions
+
+
+data RuleDefinition = RuleDefinition {
+    name :: String
+  , expr :: [[Term]] -- semantically "or"-connected lists
+  } deriving (Generic, Eq, Show)
+
+instance ToJSON RuleDefinition where
+  toEncoding = genericToEncoding defaultOptions
+  
 
 data Term = Literal String | RuleRef String
-  deriving (Eq, Show)
+  deriving (Generic, Eq, Show)
+
+instance ToJSON Term where
+  toEncoding (Literal s) = pairs $ "l" .= s
+  toEncoding (RuleRef s) = pairs $ "ref" .= s
+  
+
+parse :: String -> Maybe BNFDefinition
+parse s = go $ parseString syntax mempty s where
+  go (Success definition) = Just definition
+  go (Failure _) = Nothing
   
 
 syntax :: Parser BNFDefinition
@@ -25,12 +48,12 @@ syntax = BNFDefinition <$> rule `sepEndBy1` lineEnd <* eof
 
 rule :: Parser RuleDefinition
 rule = do
-  name <- blanks *> lt *> ruleName <* gt <* blanks
-  expr <- string "::=" *> blanks *> expression
-  return $ RuleDefinition name expr
+  name' <- blanks *> lt *> ruleName <* gt <* blanks
+  expr' <- string "::=" *> blanks *> expression
+  return $ RuleDefinition name' expr'
 
-expression :: Parser Expression
-expression = Expression <$> list `sepBy1` (blanks *> char '|' *> blanks)
+expression :: Parser [[Term]]
+expression = list `sepBy1` (blanks *> char '|' *> blanks)
 
 lineEnd :: Parser ()
 lineEnd = blanks *> some newline *> mempty
