@@ -38,20 +38,20 @@ main = hspec $ do
       runRuleCharParser "x" `shouldMatch` 'x'
 
   describe "ruleName" $ do
-    runRuleName <- pure $ runParser ruleName
-    runRuleNameParser <- pure $ parseString ruleName mempty
+    runRuleRef <- pure $ runParser ruleName
+    runRuleRefParser <- pure $ parseString ruleName mempty
     it "should reject empty strings" $ do
-      runRuleName "" `shouldBe` False
+      runRuleRef "" `shouldBe` False
     it "should reject strings starting with a number" $ do
-      runRuleName "1bdf" `shouldBe` False
+      runRuleRef "1bdf" `shouldBe` False
     it "should accept single char strings" $ do
-      runRuleName "a" `shouldBe` True
+      runRuleRef "a" `shouldBe` True
     it "should accept multi char strings" $ do
-      runRuleName "abc" `shouldBe` True
+      runRuleRef "abc" `shouldBe` True
     it "should accept strings starting with a char" $ do
-      runRuleName "abc23" `shouldBe` True
+      runRuleRef "abc23" `shouldBe` True
     it "should parse the string" $ do
-      runRuleNameParser "a123" `shouldMatch` "a123"
+      runRuleRefParser "a123" `shouldMatch` "a123"
   
   describe "character1" $ do
     runCharacter1 <- pure $ runParser character1
@@ -100,7 +100,7 @@ main = hspec $ do
     it "should parse valid literals" $ do
       runTerm "'abcdef'" `shouldMatch` Literal "abcdef"
     it "should parse valid rules" $ do
-      runTerm "<abc>" `shouldMatch` (Rule $ RuleName "abc")
+      runTerm "<abc>" `shouldMatch` (RuleRef "abc")
 
   describe "list" $ do
     runList <- pure $ parseString list mempty
@@ -108,14 +108,14 @@ main = hspec $ do
       runList "'abc'" `shouldMatch` [Literal "abc"]
     it "should parse multiple rules" $ do
       runList "<abc><def>" `shouldMatch` 
-        [Rule $ RuleName "abc", Rule $ RuleName "def"]
+        [RuleRef "abc", RuleRef "def"]
     it "should parse multiple terms" $ do
       runList "'abc'\"x\"" `shouldMatch` 
         [Literal "abc", Literal "x"]
     it "should parse mixed rules and literals" $ do
       runList "<abc><def>'x'<abc>'literal'" `shouldMatch` 
-        [Rule $ RuleName "abc", Rule $ RuleName "def", 
-         Literal "x", Rule $ RuleName "abc", Literal "literal"]
+        [RuleRef "abc", RuleRef "def", 
+         Literal "x", RuleRef "abc", Literal "literal"]
     it "should be insensitive to whitespaces" $ do
       runList "'abc' \"x\"" `shouldMatch` 
         [Literal "abc", Literal "x"]
@@ -129,12 +129,12 @@ main = hspec $ do
         [[Literal "abc"], [Literal "def"]]
     it "should parse complex terms connected by \"or\"" $ do
       runDescription "'abc'<x>|<y>'def'" `shouldMatch` Expression 
-        [[Literal "abc", Rule $ RuleName "x"],
-         [Rule $ RuleName "y", Literal "def"]]
+        [[Literal "abc", RuleRef "x"],
+         [RuleRef "y", Literal "def"]]
     it "should be insensitive to whitespaces around \"|\"" $ do
       runDescription "'abc'  <x> | <y>  'def'" `shouldMatch` Expression 
-        [[Literal "abc", Rule $ RuleName "x"],
-         [Rule $ RuleName "y", Literal "def"]]
+        [[Literal "abc", RuleRef "x"],
+         [RuleRef "y", Literal "def"]]
     it "should be insensitive to whitespaces around \"|\" with multiple \"or\"s" $ do
       runDescription "'x' | 'y' | 'z'" `shouldMatch` Expression 
         [[Literal "x"], [Literal "y"], [Literal "z"]]
@@ -143,20 +143,20 @@ main = hspec $ do
     runRule <- pure $ parseString rule mempty
     it "should parse a simple rule" $ do
       runRule "<ab>::=<ab>" `shouldMatch` RuleDefinition 
-        (RuleName "ab") (Expression [[Rule $ RuleName "ab"]])
+        "ab" (Expression [[RuleRef "ab"]])
     it "should parse a simple rule with rule name" $ do
       runRule "<ab>::='x'" `shouldMatch` RuleDefinition 
-        (RuleName "ab") (Expression [[Literal "x"]])
+        "ab" (Expression [[Literal "x"]])
     it "should parse a rule ending with a new line" $ do
       runRule "<ab>::='x'\n" `shouldMatch` RuleDefinition 
-        (RuleName "ab") (Expression [[Literal "x"]])
+        "ab" (Expression [[Literal "x"]])
     it "should be insensitive to whitespaces" $ do
       runRule " <ab>   ::=   'x'  " `shouldMatch` RuleDefinition 
-        (RuleName "ab") (Expression [[Literal "x"]])
+        "ab" (Expression [[Literal "x"]])
         
   describe "syntax" $ do 
     runSyntax <- pure $ parseString syntax mempty
     it "should parse two lines of rules" $ do
       runSyntax "<a>::='b'\n<c>::=<d>" `shouldMatch` BNFDefinition
-        [RuleDefinition (RuleName "a") (Expression [[Literal "b"]]),
-         RuleDefinition (RuleName "c") (Expression [[Rule $ RuleName "d"]])]
+        [RuleDefinition "a" (Expression [[Literal "b"]]),
+         RuleDefinition "c" (Expression [[RuleRef "d"]])]

@@ -10,62 +10,39 @@ import Util
 data BNFDefinition = BNFDefinition [RuleDefinition]
   deriving (Eq, Show)
 
-data RuleDefinition = RuleDefinition RuleName Expression
+data RuleDefinition = RuleDefinition String Expression
   deriving (Eq, Show)
 
 newtype Expression = Expression [[Term]] -- or connected term lists
   deriving (Eq, Show)
+
+data Term = Literal String | RuleRef String
+  deriving (Eq, Show)
   
-newtype RuleName = RuleName String
-  deriving (Eq, Show)
-
-data Term = Literal String | Rule RuleName
-  deriving (Eq, Show)
-
 
 syntax :: Parser BNFDefinition
-syntax = BNFDefinition <$> (rule `sepEndBy1` lineEnd) <* eof 
+syntax = BNFDefinition <$> rule `sepEndBy1` lineEnd <* eof 
 
 rule :: Parser RuleDefinition
 rule = do
-  _    <- blanks >> char '<'
-  name <- ruleName <* char '>' <* blanks <* string "::=" <* blanks
-  expr <- expression
-  return $ RuleDefinition (RuleName name) expr
+  name <- blanks *> lt *> ruleName <* gt <* blanks
+  expr <- string "::=" *> blanks *> expression
+  return $ RuleDefinition name expr
 
 expression :: Parser Expression
-expression = try orConcatenatedList <|> singleList
-               
-singleList :: Parser Expression
-singleList = Expression . (: []) <$> list
-
-orConcatenatedList :: Parser Expression
-orConcatenatedList = do
-  l <- list <* (blanks >> char '|' >> blanks)
-  Expression e <- expression
-  return $ Expression $ l : e
-  
-blanks :: Parser ()
-blanks = const () <$> (many $ char ' ')
+expression = Expression <$> list `sepBy1` (blanks *> char '|' *> blanks)
 
 lineEnd :: Parser ()
-lineEnd = do
-  _ <- blanks >> some newline
-  return ()
+lineEnd = blanks *> some newline *> mempty
 
 list :: Parser [Term]
-list = try (do
-  h <- term <* blanks
-  t <- list
-  return $ h : t) <|> (: []) <$> term
+list = term `sepEndBy1` blanks
 
 term :: Parser Term
-term = literal <|> 
-  (Rule . RuleName <$> (char '<' >> ruleName <* char '>'))
+term = literal <|> RuleRef <$> (lt *> ruleName <* gt)
 
 literal :: Parser Term
-literal = Literal <$> ((cp2s (char  '"') >> text1 <* cp2s (char  '"')) <|> 
-                       (cp2s (char '\'') >> text2 <* cp2s (char '\'')))
+literal = Literal <$> (dq *> text1 <* dq <|> sq *> text2 <* sq)
 
 text1 :: Parser String
 text1 = many character1
@@ -74,28 +51,25 @@ text2 :: Parser String
 text2 = many character2
 
 character :: Parser Char
-character = letter' <|> digit' <|> symbol'
-
-letter' :: Parser Char
-letter' = oneOf $ ['A'..'Z'] ++ ['a'..'z']
-
-digit' :: Parser Char
-digit' = oneOf ['0'..'9']
+character = letter <|> digit <|> symbol'
 
 symbol' :: Parser Char
 symbol' = oneOf "| !#$%&()*+,-./:;>=<?@[\\]^_`{}~"
 
 character1 :: Parser Char
-character1 = character <|> char '\''
+character1 = character <|> sq
 
 character2 :: Parser Char
-character2 = character <|> char '"'
+character2 = character <|> dq
 
 ruleName :: Parser String
 ruleName = do
-  shead <- letter'
+  shead <- letter
   stail <- many ruleChar
   return $ shead : stail
 
 ruleChar :: Parser Char
-ruleChar = letter' <|> digit <|> char '-'
+ruleChar = letter <|> digit <|> char '-'
+
+blanks :: Parser ()
+blanks = many (char ' ') *> mempty
