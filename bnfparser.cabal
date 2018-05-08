@@ -3,26 +3,34 @@ version: 1.0
 cabal-version: 1.22
 build-type: Simple
 license: MIT
+license-file: LICENSE
+copyright: 2018 Timo Denk
 maintainer: Timo Denk
 stability: experimental
+homepage: https://github.com/Simsso/BNF-Parser
+bug-reports: https://github.com/Simsso/BNF-Parser/issues
 synopsis: Parses Backus-Naur form strings
+description:
+    Haskell server that parses Backus-Naur form expressions (syntax only).
 category: Parser
 author: Timo Denk
 extra-source-files:
     .gitignore
     BNFDefinition.txt
+    README.md
 x-ghc-framework-version: 8.0.2-8.9-3
 x-last-ide-version: HfM1.5.1
 Executable bnfparser
   main-is: Main.hs
   buildable: True
   build-depends:
-      bytestring -any,
+      aeson -any,
+      http-types -any,
+      trifecta -any,
+      scotty -any,
       base -any,
       hspec -any,
-      aeson -any,
-      trifecta -any,
-      scotty -any
+      bytestring -any
   default-language: Haskell2010
   other-modules:
       BackusNaurForm

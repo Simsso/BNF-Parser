@@ -11,8 +11,8 @@ shouldMatch :: Eq a => Result a -> a -> Bool
 shouldMatch (Success x) a = x == a
 shouldMatch (Failure _) _ = False
 
-main :: IO ()
-main = hspec $ do
+run :: IO ()
+run = hspec $ do
   
   describe "lineEnd" $ do
     runLineEnd <- pure $ runParser lineEnd
@@ -160,5 +160,9 @@ main = hspec $ do
     runSyntax <- pure $ parseString syntax mempty
     it "should parse two lines of rules" $ do
       runSyntax "<a>::='b'\n<c>::=<d>" `shouldMatch` BNFDefinition
+        [RuleDefinition "a" [[Literal "b"]],
+         RuleDefinition "c" [[RuleRef "d"]]]
+    it "should parse two lines of rules ending with newline and spaces" $ do
+      runSyntax "<a>::='b'\n<c>::=<d>\n  " `shouldMatch` BNFDefinition
         [RuleDefinition "a" [[Literal "b"]],
          RuleDefinition "c" [[RuleRef "d"]]]

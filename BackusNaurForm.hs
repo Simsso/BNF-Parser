@@ -5,7 +5,8 @@
 module BackusNaurForm where
 
 import Control.Applicative
-import Data.Aeson (ToJSON, genericToEncoding, defaultOptions, toEncoding, pairs, (.=))
+import Data.Aeson (
+  ToJSON, genericToEncoding, defaultOptions, toEncoding, pairs, (.=))
 import GHC.Generics
 import Text.Trifecta
 import Util
@@ -15,6 +16,11 @@ import Util
 data BNFDefinition = BNFDefinition {
     rules :: [RuleDefinition]
   } deriving (Generic, Eq, Show)
+  
+instance Monoid BNFDefinition where
+  mempty = BNFDefinition []
+  mappend (BNFDefinition a) (BNFDefinition b) = 
+    BNFDefinition $ a ++ b
 
 instance ToJSON BNFDefinition where
   toEncoding = genericToEncoding defaultOptions
@@ -44,7 +50,7 @@ parse s = go $ parseString syntax mempty s where
   
 
 syntax :: Parser BNFDefinition
-syntax = BNFDefinition <$> rule `sepEndBy1` lineEnd <* eof 
+syntax = BNFDefinition <$> (rule `sepEndBy1` lineEnd) <* eof
 
 rule :: Parser RuleDefinition
 rule = do
@@ -56,7 +62,7 @@ expression :: Parser [[Term]]
 expression = list `sepBy1` (blanks *> char '|' *> blanks)
 
 lineEnd :: Parser ()
-lineEnd = blanks *> some newline *> mempty
+lineEnd = blanks *> some newline *> blanks
 
 list :: Parser [Term]
 list = term `sepEndBy1` blanks

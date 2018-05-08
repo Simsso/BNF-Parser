@@ -5,4 +5,4 @@ module Test.Main where
 import qualified Test.ParserTest
 
 main :: IO ()
-main = Test.ParserTest.main
+main = Test.ParserTest.run
