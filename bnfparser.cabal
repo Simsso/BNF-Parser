@@ -1,0 +1,27 @@
+name: bnfparser
+version: 1.0
+cabal-version: 1.22
+build-type: Simple
+license: MIT
+maintainer: Timo Denk
+stability: experimental
+synopsis: Parses Backus-Naur form strings
+category: Parser
+author: Timo Denk
+extra-source-files:
+    .gitignore
+    BNFDefinition.txt
+x-ghc-framework-version: 8.0.2-8.9-3
+x-last-ide-version: HfM1.5.1
+Executable bnfparser
+  main-is: Main.hs
+  buildable: True
+  build-depends:
+      base -any,
+      trifecta -any,
+      hspec -any
+  default-language: Haskell2010
+  other-modules:
+      BackusNaurForm
+      Util
+      Test.ParserTest
