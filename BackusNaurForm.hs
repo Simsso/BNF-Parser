@@ -43,10 +43,18 @@ instance ToJSON Term where
   toEncoding (RuleRef s) = pairs $ "ref" .= s
   
 
-parse :: String -> Maybe BNFDefinition
+data ParseError = ParseError {
+    error :: String
+  } deriving (Generic, Eq, Show)
+
+instance ToJSON ParseError where
+  toEncoding = genericToEncoding defaultOptions
+
+
+parse :: String -> Either ParseError BNFDefinition
 parse s = go $ parseString syntax mempty s where
-  go (Success definition) = Just definition
-  go (Failure _) = Nothing
+  go (Success def) = Right def
+  go (Failure f) = Left $ ParseError $ show f
   
 
 syntax :: Parser BNFDefinition

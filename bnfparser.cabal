@@ -16,8 +16,10 @@ category: Parser
 author: Timo Denk
 extra-source-files:
     .gitignore
-    BNFDefinition.txt
     README.md
+    LICENSE
+    BNFDefinition.txt
+    Dockerfile
 x-ghc-framework-version: 8.0.2-8.9-3
 x-last-ide-version: HfM1.5.1
 Executable bnfparser
