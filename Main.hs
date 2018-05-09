@@ -10,16 +10,19 @@ import Web.Scotty
 
 main :: IO ()
 main = scotty 3000 $ do
-  post "/parse" $ do
-    b <- body
-    parsed <- pure $ BNF.parse $ unpack b
-    status status200
-    respond parsed
+  post "/parse" parseController
+  get  "/meta-data/api-spec" $ file "MetaData/APISpecification.yaml"
 
-respond :: (Aeson.ToJSON a, Aeson.ToJSON b) => Either a b -> ActionM ()
-respond (Right definition) = do
+parseController :: ActionM ()
+parseController = do
+  b <- body
+  parsed <- pure $ BNF.parse $ unpack b
   status status200
-  json $ definition
-respond (Left  failure) = do
-  status status400
-  json $ failure
+  respond parsed where
+    respond :: (Aeson.ToJSON a, Aeson.ToJSON b) => Either a b -> ActionM ()
+    respond (Right definition) = do
+      status status200
+      json $ definition
+    respond (Left  failure) = do
+      status status400
+      json $ failure

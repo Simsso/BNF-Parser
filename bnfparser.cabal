@@ -19,6 +19,7 @@ extra-source-files:
     README.md
     LICENSE
     BNFDefinition.txt
+    MetaData/APISpecification.yaml
     Dockerfile
 x-ghc-framework-version: 8.0.2-8.9-3
 x-last-ide-version: HfM1.5.1
