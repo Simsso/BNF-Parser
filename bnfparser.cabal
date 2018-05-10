@@ -15,16 +15,21 @@ description:
 category: Parser
 author: Timo Denk
 extra-source-files:
+    Samples/Valid/PostalAddress.txt
+    Samples/Valid/BNFDefinition.txt
+    Samples/Valid/NewLinesWithSpaces.txt
+    Samples/Invalid/ClosingGreaterThanMissing.txt
+    Samples/Invalid/RuleMarker.txt
     .gitignore
     README.md
     LICENSE
-    BNFDefinition.txt
+    MetaData/BNFDefinition.txt
     MetaData/APISpecification.yaml
     Dockerfile
 x-ghc-framework-version: 8.0.2-8.9-3
 x-last-ide-version: HfM1.5.1
 Executable bnfparser
-  main-is: Main.hs
+  main-is: Parser/Server.hs
   buildable: True
   build-depends:
       aeson -any,
@@ -33,10 +38,12 @@ Executable bnfparser
       scotty -any,
       base -any,
       hspec -any,
+      hspec-core -any,
       bytestring -any
   default-language: Haskell2010
   other-modules:
-      BackusNaurForm
-      Util
-      Test.Main
-      Test.ParserTest
+      Parser.BackusNaurForm
+      Parser.Util
+      Tests.IntegrationTest
+      Tests.Run
+      Tests.ParserTest

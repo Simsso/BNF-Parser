@@ -1,7 +1,9 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-import qualified BackusNaurForm as BNF
+module Parser.Server where
+
+import qualified Parser.BackusNaurForm as BNF
 import qualified Data.Aeson as Aeson
 import Data.ByteString.Lazy.Char8
 import Network.HTTP.Types.Status

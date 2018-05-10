@@ -1,21 +1,29 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module Test.ParserTest where
+module Tests.ParserTest where
   
-import BackusNaurForm
+import Parser.BackusNaurForm
 import Test.Hspec
-import Text.Trifecta (parseString, Result(..))
-import Util (runParser)
+import Test.Hspec.Core.Spec (SpecM)
+
+import Text.Trifecta (eof, Parser, parseString, Result(..))
 
 shouldMatch :: Eq a => Result a -> a -> Bool
 shouldMatch (Success x) a = x == a
 shouldMatch (Failure _) _ = False
 
-run :: IO ()
-run = hspec $ do
+isSuccess :: Result a -> Bool
+isSuccess (Success _) = True
+isSuccess _           = False
+
+runParser :: Parser a -> String -> Bool
+runParser p s = isSuccess $ parseString p mempty s
+
+run :: SpecM () ()
+run = do
   
   describe "lineEnd" $ do
-    runLineEnd <- pure $ runParser lineEnd
+    runLineEnd <- pure $ runParser $ lineEnd <* eof
     it "should accept a newline \"\\n\"" $ do
       runLineEnd "\n" `shouldBe` True
     it "should accept muliple newlines" $ do
@@ -98,11 +106,16 @@ run = hspec $ do
       runLiteral "" `shouldBe` False
       
   describe "term" $ do
-    runTerm <- pure $ parseString term mempty
+    runTerm <- pure $ runParser term
+    runTermParser <- pure $ parseString term mempty
     it "should parse valid literals" $ do
-      runTerm "'abcdef'" `shouldMatch` Literal "abcdef"
+      runTermParser "'abcdef'" `shouldMatch` Literal "abcdef"
     it "should parse valid rules" $ do
-      runTerm "<abc>" `shouldMatch` (RuleRef "abc")
+      runTermParser "<abc>" `shouldMatch` (RuleRef "abc")
+    it "should reject empty references" $ do
+      runTerm "<>" `shouldBe` False
+    it "should reject whitespace-only references" $ do
+      runTerm "< >" `shouldBe` False
 
   describe "list" $ do
     runList <- pure $ parseString list mempty

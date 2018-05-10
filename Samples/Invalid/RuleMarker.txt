@@ -1,0 +1,1 @@
+ <postal-address> := <name-part> <street-address> <zip-part>

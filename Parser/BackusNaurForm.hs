@@ -2,14 +2,14 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module BackusNaurForm where
+module Parser.BackusNaurForm where
 
 import Control.Applicative
 import Data.Aeson (
   ToJSON, genericToEncoding, defaultOptions, toEncoding, pairs, (.=))
 import GHC.Generics
 import Text.Trifecta
-import Util
+import Parser.Util
 
 
 
@@ -70,7 +70,7 @@ expression :: Parser [[Term]]
 expression = list `sepBy1` (blanks *> char '|' *> blanks)
 
 lineEnd :: Parser ()
-lineEnd = blanks *> some newline *> blanks
+lineEnd = blanks *> newline *> spaces -- at least one newline
 
 list :: Parser [Term]
 list = term `sepEndBy1` blanks
@@ -91,7 +91,10 @@ character :: Parser Char
 character = letter <|> digit <|> symbol'
 
 symbol' :: Parser Char
-symbol' = oneOf "| !#$%&()*+,-./:;>=<?@[\\]^_`{}~"
+symbol' = oneOf specialChars
+
+specialChars :: [Char]
+specialChars = "| !#$%&()*+,-./:;>=<?@[\\]^_`{}~"
 
 character1 :: Parser Char
 character1 = character <|> sq
