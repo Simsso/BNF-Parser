@@ -32,8 +32,9 @@ Executable bnfparser
   main-is: Parser/Server.hs
   buildable: True
   build-depends:
-      aeson -any,
       http-types -any,
+      aeson -any,
+      QuickCheck -any,
       trifecta -any,
       scotty -any,
       base -any,
@@ -44,6 +45,7 @@ Executable bnfparser
   other-modules:
       Parser.BackusNaurForm
       Parser.Util
-      Tests.IntegrationTest
       Tests.Run
       Tests.ParserTest
+      Tests.IntegrationTest
+      Tests.PropertyTest

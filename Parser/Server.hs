@@ -12,6 +12,7 @@ import Web.Scotty
 
 main :: IO ()
 main = scotty 3000 $ do
+  get "/" $ pure () -- TODO: implement input field webpage
   post "/parse" parseController
   get  "/meta-data/api-spec" $ file "MetaData/APISpecification.yaml"
 

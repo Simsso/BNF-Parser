@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wall #-}
 
 module Parser.Util where
-  
+
 import Text.Trifecta
   
 c2s :: Char -> String
