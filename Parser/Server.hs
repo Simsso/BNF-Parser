@@ -10,22 +10,22 @@ import Network.HTTP.Types.Status
 import Web.Scotty
 
 
-main :: IO ()
-main = scotty 3000 $ do
-  get "/" $ pure () -- TODO: implement input field webpage
+start :: IO ()
+start = scotty 3000 $ do
+  get "/" $ file "Webpage/index.html"
   post "/parse" parseController
   get  "/meta-data/api-spec" $ file "MetaData/APISpecification.yaml"
 
 parseController :: ActionM ()
 parseController = do
   b <- body
-  parsed <- pure $ BNF.parse $ unpack b
+  parsed <- pure $ BNF.parseString $ unpack b
   status status200
   respond parsed where
-    respond :: (Aeson.ToJSON a, Aeson.ToJSON b) => Either a b -> ActionM ()
+    respond :: (Show a, Aeson.ToJSON b) => Either a b -> ActionM ()
     respond (Right definition) = do
       status status200
       json $ definition
-    respond (Left  failure) = do
+    respond (Left failure) = do
       status status400
-      json $ failure
+      json . BNF.ParseErr $ show failure

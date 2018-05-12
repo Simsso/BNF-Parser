@@ -2,7 +2,8 @@
 
 module Parser.Util where
 
-import Text.Trifecta
+import Text.Megaparsec
+import Text.Megaparsec.String
   
 c2s :: Char -> String
 c2s = (:[])
@@ -10,14 +11,14 @@ c2s = (:[])
 cp2s :: Parser Char -> Parser String
 cp2s = fmap (:[])
 
-lt :: CharParsing m => m Char
+lt :: Parser Char
 lt = char '<'
 
-gt :: CharParsing m => m Char
+gt :: Parser Char
 gt = char '>'
 
-sq :: CharParsing m => m Char
+sq :: Parser Char
 sq = char '\''
 
-dq :: CharParsing m => m Char
+dq :: Parser Char
 dq = char '"'

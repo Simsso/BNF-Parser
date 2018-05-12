@@ -9,7 +9,7 @@ import Test.QuickCheck
 
 
 propertyInverseFunction :: BNFDefinition -> Bool
-propertyInverseFunction bnf = case parse (show bnf) of
+propertyInverseFunction bnf = case parseString (show bnf) of
   (Left _) -> False
   (Right bnf') -> bnf' == bnf
 

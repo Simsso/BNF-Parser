@@ -5,25 +5,25 @@ module Tests.ParserTest where
 import Parser.BackusNaurForm
 import Test.Hspec
 import Test.Hspec.Core.Spec (SpecM)
+import Text.Megaparsec
+import Text.Megaparsec.String
 
-import Text.Trifecta (eof, Parser, parseString, Result(..))
+shouldMatch :: Eq a => Either (ParseError b c) a -> a -> Bool
+shouldMatch (Right x) a = x == a
+shouldMatch (Left _)  _ = False
 
-shouldMatch :: Eq a => Result a -> a -> Bool
-shouldMatch (Success x) a = x == a
-shouldMatch (Failure _) _ = False
+isSuccess :: Either (ParseError b c) a -> Bool
+isSuccess (Right _) = True
+isSuccess _         = False
 
-isSuccess :: Result a -> Bool
-isSuccess (Success _) = True
-isSuccess _           = False
-
-runParser :: Parser a -> String -> Bool
-runParser p s = isSuccess $ parseString p mempty s
+runParserBool :: Parser a -> String -> Bool
+runParserBool p s = isSuccess $ parse p mempty s
 
 run :: SpecM () ()
 run = do
   
   describe "lineEnd" $ do
-    runLineEnd <- pure $ runParser $ lineEnd <* eof
+    runLineEnd <- pure $ runParserBool $ lineEnd <* eof
     it "should accept a newline \"\\n\"" $ do
       runLineEnd "\n" `shouldBe` True
     it "should accept muliple newlines" $ do
@@ -32,8 +32,8 @@ run = do
       runLineEnd "  \n \n" `shouldBe` True
   
   describe "ruleChar" $ do
-    runRuleChar <- pure $ runParser ruleChar
-    runRuleCharParser <- pure $ parseString ruleChar mempty
+    runRuleChar <- pure $ runParserBool ruleChar
+    runRuleCharParser <- pure $ parse ruleChar mempty
     it "should accept a letter" $ do
       runRuleChar "a" `shouldBe` True
     it "should accept a digit" $ do
@@ -48,8 +48,8 @@ run = do
       runRuleCharParser "x" `shouldMatch` 'x'
 
   describe "ruleName" $ do
-    runRuleRef <- pure $ runParser ruleName
-    runRuleRefParser <- pure $ parseString ruleName mempty
+    runRuleRef <- pure $ runParserBool ruleName
+    runRuleRefParser <- pure $ parse ruleName mempty
     it "should reject empty strings" $ do
       runRuleRef "" `shouldBe` False
     it "should reject strings starting with a number" $ do
@@ -64,8 +64,8 @@ run = do
       runRuleRefParser "a123" `shouldMatch` "a123"
   
   describe "character1" $ do
-    runCharacter1 <- pure $ runParser character1
-    runCharacter1Parser <- pure $ parseString character1 mempty
+    runCharacter1 <- pure $ runParserBool character1
+    runCharacter1Parser <- pure $ parse character1 mempty
     it "should accept non special chars" $ do
       runCharacter1 "x" `shouldBe` True
     it "should accept special chars" $ do
@@ -78,8 +78,8 @@ run = do
       runCharacter1Parser "a" `shouldMatch` 'a'
   
   describe "character2" $ do
-    runCharacter2 <- pure $ runParser character2
-    runCharacter2Parser <- pure $ parseString character2 mempty
+    runCharacter2 <- pure $ runParserBool character2
+    runCharacter2Parser <- pure $ parse character2 mempty
     it "should accept non special chars" $ do
       runCharacter2 "x" `shouldBe` True
     it "should accept special chars" $ do
@@ -92,8 +92,8 @@ run = do
       runCharacter2Parser "a" `shouldMatch` 'a'
 
   describe "literal" $ do
-    runLiteral <- pure $ runParser literal
-    runLiteralParser <- pure $ parseString literal mempty
+    runLiteral <- pure $ runParserBool literal
+    runLiteralParser <- pure $ parse literal mempty
     it "should parse chars in double quotes" $ do
       runLiteralParser "\"abc\"" `shouldMatch` Literal "abc"
     it "should parse chars in single quotes" $ do
@@ -106,8 +106,8 @@ run = do
       runLiteral "" `shouldBe` False
       
   describe "term" $ do
-    runTerm <- pure $ runParser term
-    runTermParser <- pure $ parseString term mempty
+    runTerm <- pure $ runParserBool term
+    runTermParser <- pure $ parse term mempty
     it "should parse valid literals" $ do
       runTermParser "'abcdef'" `shouldMatch` Literal "abcdef"
     it "should parse valid rules" $ do
@@ -118,7 +118,7 @@ run = do
       runTerm "< >" `shouldBe` False
 
   describe "list" $ do
-    runList <- pure $ parseString list mempty
+    runList <- pure $ parse list mempty
     it "should parse a single term" $ do
       runList "'abc'" `shouldMatch` [Literal "abc"]
     it "should parse multiple rules" $ do
@@ -136,7 +136,7 @@ run = do
         [Literal "abc", Literal "x"]
          
   describe "expression" $ do
-    runDescription <- pure $ parseString expression mempty
+    runDescription <- pure $ parse expression mempty
     it "should parse a single term" $ do
       runDescription "'abc'" `shouldMatch` [[Literal"abc"]]
     it "should parse terms connected by \"or\", i.e. \"|\"" $ do
@@ -155,7 +155,7 @@ run = do
         [[Literal "x"], [Literal "y"], [Literal "z"]]
   
   describe "rule" $ do
-    runRule <- pure $ parseString rule mempty
+    runRule <- pure $ parse rule mempty
     it "should parse a simple rule" $ do
       runRule "<ab>::=<ab>" `shouldMatch` RuleDefinition 
         "ab" [[RuleRef "ab"]]
@@ -170,7 +170,7 @@ run = do
         "ab" [[Literal "x"]]
         
   describe "syntax" $ do 
-    runSyntax <- pure $ parseString syntax mempty
+    runSyntax <- pure $ parse syntax mempty
     it "should parse two lines of rules" $ do
       runSyntax "<a>::='b'\n<c>::=<d>" `shouldMatch` BNFDefinition
         [RuleDefinition "a" [[Literal "b"]],

@@ -10,7 +10,8 @@ import Data.Aeson (
 import Data.List (intercalate)
 import GHC.Generics
 import Test.QuickCheck (Arbitrary, arbitrary, choose, frequency, Gen, sized)
-import Text.Trifecta
+import Text.Megaparsec
+import Text.Megaparsec.String
 import Parser.Util
 
 
@@ -66,19 +67,15 @@ instance Arbitrary Term where
     (1, Literal <$> literalGen),
     (1, RuleRef <$> ruleNameGen)]
 
-data ParseError = ParseError {
+data ParseErr = ParseErr {
     error :: String
   } deriving (Generic, Eq, Show)
 
-instance ToJSON ParseError where
+instance ToJSON ParseErr where
   toEncoding = genericToEncoding defaultOptions
-
-
-parse :: String -> Either ParseError BNFDefinition
-parse s = go $ parseString syntax mempty s where
-  go (Success def) = Right def
-  go (Failure f) = Left $ ParseError $ show f
   
+parseString :: String -> Either (ParseError Char Dec) BNFDefinition
+parseString = parse syntax ""
 
 syntax :: Parser BNFDefinition
 syntax = BNFDefinition <$> (rule `sepEndBy1` lineEnd) <* eof
@@ -93,7 +90,7 @@ expression :: Parser [[Term]]
 expression = list `sepBy1` (blanks *> char '|' *> blanks)
 
 lineEnd :: Parser ()
-lineEnd = blanks *> newline *> spaces -- at least one newline
+lineEnd = blanks *> newline *> space -- at least one newline
 
 list :: Parser [Term]
 list = term `sepEndBy1` blanks
@@ -111,7 +108,7 @@ text2 :: Parser String
 text2 = many character2
 
 character :: Parser Char
-character = letter <|> digit <|> symbol'
+character = letterChar <|> digitChar <|> symbol'
 
 symbol' :: Parser Char
 symbol' = oneOf specialChars
@@ -127,15 +124,15 @@ character2 = character <|> dq
 
 ruleName :: Parser String
 ruleName = do
-  shead <- letter
+  shead <- letterChar
   stail <- many ruleChar
   return $ shead : stail
 
 ruleChar :: Parser Char
-ruleChar = letter <|> digit <|> char '-'
+ruleChar = letterChar <|> digitChar <|> char '-'
 
 blanks :: Parser ()
-blanks = many (char ' ') *> mempty
+blanks = many (char ' ') >> pure ()
 
 
 -- generation utility methods

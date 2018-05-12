@@ -33,4 +33,4 @@ runAgainst desired file =
   in do
     it ("should" ++ notW ++ "parse \"" ++ file ++ "\"") $ do
       s <- readFile $ "Samples/" ++ folder ++ "/" ++ file ++ ".txt"
-      isRight (BNF.parse s) `shouldBe` desired
+      isRight (BNF.parseString s) `shouldBe` desired

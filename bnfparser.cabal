@@ -1,5 +1,5 @@
 name: bnfparser
-version: 1.0
+version: 1.2
 cabal-version: 1.22
 build-type: Simple
 license: MIT
@@ -15,27 +15,28 @@ description:
 category: Parser
 author: Timo Denk
 extra-source-files:
+    .gitignore
+    MetaData/BNFDefinition.txt
+    MetaData/APISpecification.yaml
     Samples/Valid/PostalAddress.txt
     Samples/Valid/BNFDefinition.txt
     Samples/Valid/NewLinesWithSpaces.txt
     Samples/Invalid/ClosingGreaterThanMissing.txt
     Samples/Invalid/RuleMarker.txt
-    .gitignore
     README.md
     LICENSE
-    MetaData/BNFDefinition.txt
-    MetaData/APISpecification.yaml
+    Webpage/index.html
     Dockerfile
 x-ghc-framework-version: 8.0.2-8.9-3
 x-last-ide-version: HfM1.5.1
 Executable bnfparser
-  main-is: Parser/Server.hs
+  main-is: Main.hs
   buildable: True
   build-depends:
-      http-types -any,
+      megaparsec ==5.*,
       aeson -any,
+      http-types -any,
       QuickCheck -any,
-      trifecta -any,
       scotty -any,
       base -any,
       hspec -any,
@@ -45,6 +46,7 @@ Executable bnfparser
   other-modules:
       Parser.BackusNaurForm
       Parser.Util
+      Parser.Server
       Tests.Run
       Tests.ParserTest
       Tests.IntegrationTest
