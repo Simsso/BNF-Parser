@@ -1,0 +1,97 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: BNF Parser
+  description: Haskell server that parses Backus-Naur form expressions (syntax only)
+  contact:
+    name: Timo Denk
+    email: github@timodenk.com
+    url: https://timodenk.com
+  license:
+    name: MIT
+    url: https://github.com/Simsso/BNF-Parser/blob/master/LICENSE
+servers:
+  - url: https://timodenk.com/api/bnf-parser/parse
+paths:
+  /parse:
+    post:
+      description: Parses the passed Backus-Naur form (BNF) string and returns its content.
+      operationId: parseBNF
+      requestBody:
+        description: Backus-Naur form string to parse
+        required: true
+        content:
+          text/plain:
+            schema:
+                type: string
+                example: |
+                  <a> ::= <b><c>'.'
+                  <b> ::= "b" | 'b'<b>
+                  <c> ::= 'c'
+      responses:
+        '200':
+          description: Parsed content of the BNF.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BNF'
+        '400':
+          description: BNF could not be parsed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    BNF:
+      type: object
+      required:
+        - rules
+      properties:
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/Rule'
+    Rule:
+      type: object
+      required:
+        - name
+        - expr
+      properties:
+        name:
+          type: string
+        expr:
+          type: array
+          items:
+            $ref: '#/components/schemas/Expression'
+    Expression:
+      type: array
+      items:
+        oneOf:
+          - $ref: '#/components/schemas/Literal'
+          - $ref: '#/components/schemas/Reference'
+    Literal:
+      type: object
+      required:
+        - l
+      properties:
+        l:
+          type: string
+    Reference:
+      type: object
+      required:
+        - ref
+      properties:
+        ref:
+          type: string
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: |
+            {
+              "error": "ErrInfo {_errDoc = \u001b[1m(interactive)\u001b[0m:\u001b[1m3\u001b[0m:\u001b[1m12\u001b[0m: \u001b[91merror\u001b[0m: unexpected\n    EOF, expected: \"'\", \"\\\"\", digit,\n    letter\n <c> ::= 'c\u001b[1m\u001b[94m<EOF>\u001b[0;1m\u001b[0m \n           \u001b[92m^\u001b[0m     , _errDeltas = [Lines 2 11 52 11]}"
+            }

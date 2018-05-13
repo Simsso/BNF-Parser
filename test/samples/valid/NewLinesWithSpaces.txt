@@ -1,0 +1,11 @@
+ <postal-address> ::= <name-part> <street-address> <zip-part>
+
+      <name-part> ::= <personal-part> <last-name> <opt-suffix-part> <EOL> | <personal-part> <name-part>
+
+     
+         
+ 
+  <personal-part> ::= <initial> "." | <first-name>
+ 
+ 
+     

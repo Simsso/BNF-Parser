@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BNF Parser</title>
+    <style type="text/css">
+        body {
+            padding: 1rem;
+        }
+        textarea {
+            font-family: monospace;
+            width: 100%;
+            min-height: 100px;
+        }
+    </style>
+</head>
+<body>
+<h1>Backus-Naur Form Parser</h1>
+<p>Haskell server that parses Backus-Naur form (BNF) expressions. Only the syntax is being validated, semantics are not regarded. The output is in JSON format.</p>
+
+<section>
+    <h2>Input</h2>
+    <p>
+        <textarea id="bnf-input"></textarea><br>
+        <button id="parse-button">Parse</button>
+    </p>
+</section>
+
+<section>
+    <h2>Output</h2>
+    <p>
+        <textarea id="json-output"></textarea>
+    </p>
+</section>
+
+<script type="text/javascript">
+        (() => {
+            const bnfInput = document.getElementById('bnf-input'),
+                parseButton = document.getElementById('parse-button'),
+                jsonOutput = document.getElementById('json-output');
+
+            // events
+            parseButton.addEventListener('click', parseRequested);
+
+            function parseRequested() {
+                const bnfString = bnfInput.value;
+                jsonOutput.value = '';
+
+                parseBNF(bnfString, (res, error) => {
+                    if (typeof res !== 'undefined') {
+                        return jsonOutput.value = res;
+                    }
+                    return jsonOutput.value = error;
+                })
+            }
+
+            // source: https://stackoverflow.com/a/8567149/3607984
+            function parseBNF(bnf, callback) {
+                const xmlhttp = new XMLHttpRequest();
+
+                xmlhttp.onreadystatechange = function() {
+                    if (xmlhttp.readyState === XMLHttpRequest.DONE) { // XMLHttpRequest.DONE == 4
+                       if (xmlhttp.status === 200) {
+                           callback(xmlhttp.responseText);
+                       }
+                       else if (xmlhttp.status === 400) {
+                          callback(undefined, xmlhttp.responseText);
+                       }
+                       else {
+                           callback();
+                       }
+                    }
+                };
+
+                xmlhttp.open('POST', 'parse', true);
+                xmlhttp.setRequestHeader('Content-Type', 'text/plain')
+                xmlhttp.send(bnf);
+            }
+        })()
+    </script>
+</body>
+</html>
