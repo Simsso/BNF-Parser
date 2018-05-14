@@ -35,14 +35,28 @@ Haskell server that parses [Backus-Naur form (BNF)](https://en.wikipedia.org/wik
 The JSON version is obviously more verbose, but might be easier to handle when it comes to further processing.
  
 ## Run
-You can either run this app with Haskell and Cabal installed or start the Docker container (coming soon). The latter can be accomplished with the following commands:
+You can either run this app with Haskell and Stack installed or start the Docker container. Either way you should go ahead and clone this repository first:
 ```
 git clone https://github.com/Simsso/BNF-Parser bnf-parser
 cd bnf-parser
+```
+
+### Haskell Stack
+Starts the server (on port 3000):
+```
+stack build --exec bnf-parser-exe
+```
+Runs the tests:
+```
+stack test bnf-parser:test:bnf-parser-test --test-arguments --color
+```
+### Docker
+Builds (takes a couple of minutes) and starts the Docker container
+```
 docker build . --tag=bnf-parser
 docker run -p 80:3000 bnf-parser
 ```
-which will make the API accessible at http://localhost:80. The Swagger specification can be found at `/meta-data/api-spec`.
+which will make the API accessible at http://localhost:80. The Swagger API specification can be found at `/meta-data/api-spec`.
 
 ## BNF Definition
 The parser accepts BNFs which satisfy the following definition (taken from the [BNF Wikipedia article](https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_form)).

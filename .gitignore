@@ -21,9 +21,6 @@ cabal.project.local~
 .HTF/
 .ghc.environment.*
 
-# Cabal
-bnf-parser.cabal
-
 # IntelliJ IDEA
 .idea
 

@@ -1,0 +1,8 @@
+.git/
+.idea/
+.stack-work/
+out/
+
+.dockerignore
+.gitignore
+Dockerfile
